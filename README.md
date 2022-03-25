@@ -32,3 +32,7 @@ A `results.txt` will be also created in the DLLirant directory with all potentia
 A file `admin-required.txt` will also be available for the potential DLL Hijacking who require specific privileges.
 
 If a binary require a DLL from the system or another one, you can create a `import` directory in the same directory of `DLLirant.py` the script will copy all your DLL files in the `output` directory with your targeted binary.
+
+## Credits
+
+am0nsec, DallasFR
