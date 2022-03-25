@@ -146,7 +146,6 @@ def generate_test_dll(functions = None):
 							if len(func) > 0:
 								exported_functions.append(f'__declspec(dllexport) void {func}()' + '{ Main(); }')
 						exported_functions = '\n'.join(exported_functions)
-						#exported_functions = rreplace(exported_functions, '{ }', '{ Main(); }')
 						fout.write(line.replace('##EXPORTED_FUNCTIONS##', exported_functions))
 					else:
 						fout.write(line)
