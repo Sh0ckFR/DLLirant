@@ -104,7 +104,7 @@ def copy_binary_and_required_files(binary):
 
 def check_if_excluded(dll_name):
 	for exclude in dlls_excludes:
-		if dll_name.lower().startswith(exclude):
+		if dll_name.lower().startswith(exclude) or dll_name.upper().startswith(exclude):
 			return True
 	return False
 
