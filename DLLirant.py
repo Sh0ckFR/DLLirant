@@ -7,6 +7,7 @@ import shutil
 import time
 import argparse
 import subprocess
+import pefile
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--file', type=str, help='define the targeted binary', required=True)
@@ -30,27 +31,42 @@ dlls_excludes = {
 	'setupapi'
 }
 
-# Do not modify this part.
-imports_excludes = {
-	'Import Address Table',
-	'Import Name Table',
-	'time date stamp',
-	'Index of first forwarder reference',
-	'Characteristics',
-	'Address of HMODULE',
-	'Bound Import Name Table',
-	'Unload Import Name Table'
-}
-
 def ascii():
 	print('·▄▄▄▄  ▄▄▌  ▄▄▌  ▪  ▄▄▄   ▄▄▄·  ▐ ▄ ▄▄▄▄▄')
 	print('██▪ ██ ██•  ██•  ██ ▀▄ █·▐█ ▀█ •█▌▐█•██  ')
 	print('▐█· ▐█▌██▪  ██▪  ▐█·▐▀▀▄ ▄█▀▀█ ▐█▐▐▌ ▐█.▪')
 	print('██. ██ ▐█▌▐▌▐█▌▐▌▐█▌▐█•█▌▐█ ▪▐▌██▐█▌ ▐█▌·')
-	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.1')
+	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.2')
 
 def rreplace(s, old, new):
 	return (s[::-1].replace(old[::-1],new[::-1], 1))[::-1]
+
+def delete_dir(directory):
+	if os.path.exists(directory):
+		try:
+			shutil.rmtree(directory)
+		except PermissionError:
+			pass
+
+def create_dir(directory):
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+
+def delete_file(file):
+	if os.path.exists(file):
+		os.remove(file)
+
+def copy_binary_to_ouput_dir(binary_path):
+	if not os.path.exists(binary_path):
+		return False
+	binary_name = os.path.basename(binary_path).replace(' ', '_')
+	try:
+		shutil.copyfile(binary_path, f'output/{binary_name}')
+		return True
+	except FileNotFoundError:
+		return False
+	except PermissionError:
+		return False
 
 def delete_dir(directory):
 	if os.path.exists(directory):
@@ -86,51 +102,16 @@ def copy_binary_and_required_files(binary):
 			for file in filenames:
 				copy_binary_to_ouput_dir(f'import/{file}')
 
-def get_dependencies(binary_name):
-	binary_name = binary_name.replace(' ', '_')
-	os.system(f'cd output/ && dumpbin /dependents {binary_name} /OUT:../dependencies.txt')
-	with open('dependencies.txt', 'r') as file:
-		data = file.read()
-		if 'Image has the following dependencies:' in data and 'Summary' in data:
-			data = data.split('Image has the following dependencies:')[1]
-			data = data.split('Summary')[0]
-			with open('output/dependencies.txt', 'w') as subfile:
-				for line in data.splitlines():
-					if line.lower().endswith('.dll'):
-						line = line.strip()
-						subfile.write(f'{line}\n')
-	delete_file('dependencies.txt')
+def check_if_excluded(dll_name):
+	for exclude in dlls_excludes:
+		if dll_name.lower().startswith(exclude):
+			return True
+	return False
 
-def get_not_excluded_dll_names():
-	filtered_dlls = []
-	with open('output/dependencies.txt', 'r') as file:
-		for dll_name in file:
-			excluded = False
-			dll_name = dll_name.strip()
-			for exclude in dlls_excludes:
-				if dll_name.lower().startswith(exclude):
-					excluded = True
-			if not excluded:
-				filtered_dlls.append(dll_name)	
-	delete_file('output/dependencies.txt')			
-	return filtered_dlls
-
-def get_imports_functions(binary_name, dll_name):
+def get_imports_functions(dll_name, imports):
 	functions = []
-	binary_name = binary_name.replace(' ', '_')
-	os.system(f'cd output/ && dumpbin /imports {binary_name} /OUT:../imports.txt')
-	with open('imports.txt', 'r') as file:
-		data = file.read()
-		if dll_name in data:
-			data = data.split(dll_name)[1]
-			for line in data.splitlines():
-				line = line.strip()
-				if line.lower().endswith('.dll') or line.endswith('Summary'):
-					break
-				if not any(exclude in line for exclude in imports_excludes) and len(line) > 0 and ' ' in line:
-					func = line.split(' ')[1].replace(' ', '')
-					functions.append(func)
-	delete_file('imports.txt')
+	for imp in imports:
+		functions.append(imp.name.decode('utf-8'))
 	return functions
 
 def generate_test_dll(functions = None):
@@ -209,36 +190,37 @@ def main():
 	# Copy the binary to the output directory and copy the required files placed by the user in the "import" directory if exists.
 	copy_binary_and_required_files(ARGS.file)
 
-	# Get the dependencies of the binary (DLL names) via dumpbin and save it dependencies.txt.
-	get_dependencies(binary_name)
-
-	# Get the list of the dll files who are not excluded (dlls_excludes list from the top of this script).
-	dll_files = get_not_excluded_dll_names()
+	pe = pefile.PE(ARGS.file)
+	pe.parse_data_directories()
 
 	# For each dll files...
-	for dll in dll_files:
-		# Get the list of imported functions.
-		functions = get_imports_functions(binary_name, dll)
+	for entry in pe.DIRECTORY_ENTRY_IMPORT:
+		# Get the name of the dll.
+		dll_name = entry.dll.decode('utf-8')
 
-		# Generate the DLLirant test dll file without exported functions.
-		generate_test_dll()
+		if check_if_excluded(dll_name) is False:
+			# Get the entry import functions.
+			functions = get_imports_functions(dll_name, entry.imports)
 
-		# Test the generated dll to check if a dll hijacking is possible.
-		check_dll_hijacking(binary_name, binary_original_directory, dll)
+			# Generate the DLLirant test dll file without exported functions.
+			generate_test_dll()
 
-		# Test all functions one by one.
-		functions_list = []
-		for func in functions:
-			functions_list.append(func)
-			exported_functions = generate_test_dll(functions_list)
-			check_dll_hijacking(binary_name, binary_original_directory, dll, exported_functions)
+			# Test the generated dll to check if a dll hijacking is possible.
+			check_dll_hijacking(binary_name, binary_original_directory, dll_name)
 
-		# Delete and recreate the output directory to test the others dll files.
-		delete_dir('output')
-		create_dir('output')
+			# Test all functions one by one.
+			functions_list = []
+			for func in functions:
+				functions_list.append(func)
+				exported_functions = generate_test_dll(functions_list)
+				check_dll_hijacking(binary_name, binary_original_directory, dll_name, exported_functions)
 
-		# Recopy the binary and the required files.
-		copy_binary_and_required_files(ARGS.file)
+			# Delete and recreate the output directory to test the others dll files.
+			delete_dir('output')
+			create_dir('output')
+
+			# Recopy the binary and the required files.
+			copy_binary_and_required_files(ARGS.file)
 
 if __name__ == '__main__':
 	main()
