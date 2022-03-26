@@ -37,3 +37,5 @@ If a binary require a DLL from the system or another one, you can create a `impo
 ## Credits
 
 am0nsec, DallasFR
+
+The authors of the pefile library: https://github.com/erocarrera/pefile
