@@ -3,6 +3,10 @@ DLLirant is a tool to automatize the DLL Hijacking researches on a specified bin
 
 ![alt text](https://raw.githubusercontent.com/Sh0ckFR/DLLirant/main/screenshot.png)
 
+## Live Demo
+
+![alt text](https://raw.githubusercontent.com/Sh0ckFR/DLLirant/main/live.gif)
+
 ## How to install
 
 You need to install Visual Studio Community Edition or superior.
