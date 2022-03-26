@@ -16,6 +16,7 @@ In a first time you need to start a command line with the tool `x64 Native Tools
 Use the `cd` command to your DLLirant directory and to test a binary:
 
 ```
+pip3 install pefile
 python3 DLLirant.py -f "C:\THEFULLPATH\YourBinary.exe"
 ```
 
@@ -23,7 +24,7 @@ python3 DLLirant.py -f "C:\THEFULLPATH\YourBinary.exe"
 
 The script will create an output directory in the same directory of DLLirant.py, copy the targeted binary to the output directory.
 
-Via the dumpbin tool from Visual Studio, the script will extract the dll names required by the binary, and test each imports functions available one by one by compilate a custom DLL with the required exported functions.
+Via the pefile library, the script will extract the dll names required by the binary, and test each imports functions available one by one by compilate a custom DLL with the required exported functions.
 
 If a function required by the binary is executed, the custom DLL will create a `C:\\DLLirant\\output.txt` file and display a MessageBox to be sure that a DLL Hijacking is possible.
 
