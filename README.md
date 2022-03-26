@@ -13,6 +13,12 @@ You need to install Visual Studio Community Edition or superior.
 
 Start `DLLirantDLL.sln` in the directory "DLLirantDLL" to update the Visual Studio version on the project and select "Release x64" in the Visual Studio top menu and close Visual Studio (just one time).
 
+Install pefile from pip:
+
+```
+pip3 install pefile
+```
+
 ## How to use
 
 In a first time you need to start a command line with the tool `x64 Native Tools Command Prompt for VS` (search with the windows touch)
@@ -20,7 +26,6 @@ In a first time you need to start a command line with the tool `x64 Native Tools
 Use the `cd` command to your DLLirant directory and to test a binary:
 
 ```
-pip3 install pefile
 python3 DLLirant.py -f "C:\THEFULLPATH\YourBinary.exe"
 ```
 
