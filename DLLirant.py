@@ -25,7 +25,7 @@ dlls_excludes = {
 	'imm32',
 	'gdi32',
 	'msvcr',
-	'WS2_32',
+	'ws2_32',
 	'ole32',
 	'ninput',
 	'setupapi'
