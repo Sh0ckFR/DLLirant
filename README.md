@@ -38,4 +38,5 @@ If a binary require a DLL from the system or another one, you can create a `impo
 
 am0nsec, DallasFR
 
+Justin Bui from SpecterOps for his blogpost and the idea: https://posts.specterops.io/automating-dll-hijack-discovery-81c4295904b0
 The authors of the pefile library: https://github.com/erocarrera/pefile
