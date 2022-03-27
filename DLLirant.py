@@ -28,7 +28,8 @@ dlls_excludes = {
 	'ws2_32',
 	'ole32',
 	'ninput',
-	'setupapi'
+	'setupapi',
+	'mscoree'
 }
 
 def ascii():
