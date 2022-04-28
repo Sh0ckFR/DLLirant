@@ -29,6 +29,12 @@ Use the `cd` command to your DLLirant directory and to test a binary:
 python3 DLLirant.py -f "C:\THEFULLPATH\YourBinary.exe"
 ```
 
+If you want to create a proxy dll, you can use the -p option on the original vulnerable dll (read https://itm4n.github.io/dll-proxying/ for more informations):
+
+```
+python3 DLLirant.py -p "C:\THEFULLPATH\VulnerableDLL.dll"
+```
+
 ## How it works
 
 The script will create an output directory in the same directory of DLLirant.py, copy the targeted binary to the output directory.
