@@ -51,8 +51,9 @@ If a binary require a DLL from the system or another one, you can create a `impo
 
 ## Credits
 
-* am0nsec
+* [am0nsec](https://twitter.com/am0nsec)
 * DallasFR
 * Justin Bui from SpecterOps for his blogpost and the idea: https://posts.specterops.io/automating-dll-hijack-discovery-81c4295904b0
-* itm4n for his blogpost about DLL Proxying and [bik3te](https://twitter.com/bik3te) for the idea: https://itm4n.github.io/dll-proxying/
+* itm4n for his blogpost about DLL Proxying: https://itm4n.github.io/dll-proxying/
+* [bik3te](https://twitter.com/bik3te)
 * The authors of the pefile library: https://github.com/erocarrera/pefile
