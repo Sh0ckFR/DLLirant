@@ -49,6 +49,11 @@ A file `admin-required.txt` will also be available for the potential DLL Hijacki
 
 If a binary require a DLL from the system or another one, you can create a `import` directory in the same directory of `DLLirant.py` the script will copy all your DLL files in the `output` directory with your targeted binary.
 
+## Technical posts (in French)
+
+https://sh0ckfr.com/pages/martine-a-la-recherche-de-la-dll-hijacking-perdue/
+https://sh0ckfr.com/pages/martin-et-le-dll-proxying-de-cristal/
+
 ## Credits
 
 * [am0nsec](https://twitter.com/am0nsec)
