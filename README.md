@@ -51,8 +51,8 @@ If a binary require a DLL from the system or another one, you can create a `impo
 
 ## Technical posts (in French)
 
-https://sh0ckfr.com/pages/martine-a-la-recherche-de-la-dll-hijacking-perdue/
-https://sh0ckfr.com/pages/martin-et-le-dll-proxying-de-cristal/
+* https://sh0ckfr.com/pages/martine-a-la-recherche-de-la-dll-hijacking-perdue/
+* https://sh0ckfr.com/pages/martin-et-le-dll-proxying-de-cristal/
 
 ## Credits
 
