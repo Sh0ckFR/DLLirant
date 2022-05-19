@@ -76,33 +76,6 @@ def copy_binary_to_ouput_dir(binary_path):
 	except PermissionError:
 		return False
 
-def delete_dir(directory):
-	if os.path.exists(directory):
-		try:
-			shutil.rmtree(directory)
-		except PermissionError:
-			pass
-
-def create_dir(directory):
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-
-def delete_file(file):
-	if os.path.exists(file):
-		os.remove(file)
-
-def copy_binary_to_ouput_dir(binary_path):
-	if not os.path.exists(binary_path):
-		return False
-	binary_name = os.path.basename(binary_path).replace(' ', '_')
-	try:
-		shutil.copyfile(binary_path, f'output/{binary_name}')
-		return True
-	except FileNotFoundError:
-		return False
-	except PermissionError:
-		return False
-
 def copy_binary_and_required_files(binary):
 	copy_binary_to_ouput_dir(binary)
 	if os.path.exists('import'):
