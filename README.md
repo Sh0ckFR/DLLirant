@@ -11,7 +11,7 @@ DLLirant is a tool to automatize the DLL Hijacking researches on a specified bin
 
 You need to install Visual Studio Community Edition or superior.
 
-Start `DLLirantDLL.sln` in the directory "DLLirantDLL" to update the Visual Studio version on the project and select "Release x64" in the Visual Studio top menu and close Visual Studio (just one time).
+Start `DLLirantDLL.sln` in the directory "DLLirantDLL" to update the Visual Studio version on the project, select "Release x64" in the Visual Studio top menu, select your build tools available in the project properties and close Visual Studio (just one time).
 
 Install pefile from pip:
 
@@ -48,6 +48,10 @@ A `results.txt` will be also created in the DLLirant directory with all potentia
 A file `admin-required.txt` will also be available for the potential DLL Hijacking who require specific privileges.
 
 If a binary require a DLL from the system or another one, you can create a `import` directory in the same directory of `DLLirant.py` the script will copy all your DLL files in the `output` directory with your targeted binary.
+
+## Know issues
+
+- ERROR: The process "39456" not found. -> This is a normal behavior, DLLirant try to kill the process automatically, if the process is already killed, you will see this exception, just ignore it.
 
 ## Technical posts (in French)
 
