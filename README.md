@@ -9,19 +9,15 @@ DLLirant is a tool to automatize the DLL Hijacking researches on a specified bin
 
 ## How to install
 
-You need to install Visual Studio Community Edition or superior.
-
-Start `DLLirantDLL.sln` in the directory "DLLirantDLL" to update the Visual Studio version on the project, select "Release x64" in the Visual Studio top menu, select your build tools available in the project properties and close Visual Studio (just one time).
-
-Install pefile from pip:
+* Install LLVM for Windows: https://llvm.org/builds/
+* Do not forget to check the "Add LLVM to the system PATH for current user" during the installation.
+* Install pefile from pip:
 
 ```
 pip3 install pefile
 ```
 
 ## How to use
-
-In a first time you need to start a command line with the tool `x64 Native Tools Command Prompt for VS` (search with the windows touch)
 
 Use the `cd` command to your DLLirant directory and to test a binary:
 

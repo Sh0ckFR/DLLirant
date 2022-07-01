@@ -44,7 +44,7 @@ def ascii():
 	print('██▪ ██ ██•  ██•  ██ ▀▄ █·▐█ ▀█ •█▌▐█•██  ')
 	print('▐█· ▐█▌██▪  ██▪  ▐█·▐▀▀▄ ▄█▀▀█ ▐█▐▐▌ ▐█.▪')
 	print('██. ██ ▐█▌▐▌▐█▌▐▌▐█▌▐█•█▌▐█ ▪▐▌██▐█▌ ▐█▌·')
-	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.3')
+	print('▀▀▀▀▀• .▀▀▀ .▀▀▀ ▀▀▀.▀  ▀ ▀  ▀ ▀▀ █▪ ▀▀▀  v0.4 - Sh0ck (@Sh0ckFR)')
 
 def rreplace(s, old, new):
 	return (s[::-1].replace(old[::-1],new[::-1], 1))[::-1]
@@ -98,8 +98,8 @@ def get_imports_functions(dll_name, imports):
 
 def generate_test_dll(functions = None):
 	exported_functions = []
-	with open('DLLirantDLL\\dllmain-preset.c', 'r') as fin:
-		with open('DLLirantDLL\\dllmain.c', 'w') as fout:
+	with open('DLLirantDLL\\dllmain-preset.cpp', 'r') as fin:
+		with open('DLLirantDLL\\dllmain.cpp', 'w') as fout:
 			if functions is not None:
 				for line in fin:
 					if '##DLL_MAIN##' in line:
@@ -113,7 +113,7 @@ def generate_test_dll(functions = None):
 						else:
 							for func in functions:
 								if len(func) > 0:
-									exported_functions.append(f'__declspec(dllexport) void {func}()' + '{ Main(); }')
+									exported_functions.append(f'extern "C" __declspec(dllexport) void {func}()' + '{ Main(); }')
 							exported_functions = '\n'.join(exported_functions)
 							fout.write(line.replace('##EXPORTED_FUNCTIONS##', exported_functions))
 					else:
@@ -126,13 +126,17 @@ def generate_test_dll(functions = None):
 						fout.write(line.replace('##EXPORTED_FUNCTIONS##', ''))
 					else:
 						fout.write(line)
-	os.system('cd DLLirantDLL && msbuild DLLirantDLL.sln /t:Rebuild /p:Configuration=Release /p:Platform="x64"')
+	os.system('cd DLLirantDLL && clang++ dllmain.cpp -o DLLirantDLL.dll -shared')
+	delete_file('DLLirantDLL\\DLLirantDLL.exp')
+	delete_file('DLLirantDLL\\DLLirantDLL.lib')
+	delete_file('DLLirantDLL\\dllmain.cpp')
 	return exported_functions
 
 def check_dll_hijacking(binary_name, binary_original_directory, dll_name, exported_functions = 'DllMain'):
-	if not os.path.exists(f'DLLirantDLL\\x64\\Release\\DLLirantDLL.dll'):
+	if not os.path.exists('DLLirantDLL\\DLLirantDLL.dll'):
 		return False
-	os.system(f'copy DLLirantDLL\\x64\\Release\\DLLirantDLL.dll output\\{dll_name}')
+	os.system(f'copy DLLirantDLL\\DLLirantDLL.dll output\\{dll_name}')
+	delete_file('DLLirantDLL\\DLLirantDLL.dll')
 	ascii()
 	print('==================================================')
 	print(f'[+] Testing {dll_name}')
@@ -177,8 +181,11 @@ def generate_proxy_dll():
 		exported_functions.append(f'#pragma comment(linker,"/export:{func}={name_dll}.{func},@{entry.ordinal}")')
 	exported_functions = '\n'.join(exported_functions)
 	
+	ascii()
 	generate_test_dll(exported_functions)
-	print(f'\n\n[+] Rename the original dll file {name_dll}.dll and copy the compiled dll to the original directory as {original_name}')
+	os.system(f'copy DLLirantDLL\\DLLirantDLL.dll output\\DLLirantProxy.dll')
+	delete_file('DLLirantDLL\\DLLirantDLL.dll')
+	print(f'\n\n[+] Rename the original dll file {name_dll}.dll and copy the compiled dll DLLirantProxy.dll to the original directory as {original_name}')
 
 def main():
 	if ARGS.proxydll:
@@ -191,6 +198,8 @@ def main():
 	# Create or recreate the directory used by the DLLirant DLL specified in dllmain-preset.c file.
 	delete_dir('C:\\DLLirant')
 	create_dir('C:\\DLLirant')
+	delete_dir('output')
+	create_dir('output')
 
 	# Name of the binary specified and his directory.
 	binary_name = os.path.basename(ARGS.file)

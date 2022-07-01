@@ -1,10 +1,11 @@
 #include <windows.h>
 #include <stdio.h>
-#include <stdlib.h>
+
+#pragma comment (lib, "User32.lib")
 
 int Main() {
     FILE* fptr;
-    fptr = fopen("C:\\DLLirant\\output.txt", "w");
+    fopen_s(&fptr, "C:\\DLLirant\\output.txt", "w");
     fprintf(fptr, "%s", "It works !\n");
     fclose(fptr);
     MessageBoxW(0, L"DLL Hijack found!", L"DLL Hijack", 0);
