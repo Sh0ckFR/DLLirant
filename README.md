@@ -1,5 +1,5 @@
 # DLLirant
-DLLirant is a tool to automatize the DLL Hijacking researches on a specified binary.
+DLLirant is a tool to automatize the DLL Hijacking and DLL Proxying researches on a specified binary.
 
 ![alt text](https://raw.githubusercontent.com/Sh0ckFR/DLLirant/main/screenshot.png)
 
