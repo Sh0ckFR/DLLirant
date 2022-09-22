@@ -51,22 +51,19 @@ namespace DLLirant.NET.Classes
         {
             ExecuteCommand(path);
 
-            if (File.Exists("C:\\DLLirant\\output.txt")) {
+            if (File.Exists("C:\\DLLirant\\output.txt"))
                 return true;
-            }
             return false;
         }
 
-        public void ExecuteCommand(string path, string arguments = null)
+        private void ExecuteCommand(string path, string arguments = null)
         {
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.FileName = path;
             if (arguments != null)
-            {
                 startInfo.Arguments = arguments;
-            }
             startInfo.WorkingDirectory = $"{Directory.GetCurrentDirectory()}\\output";
             process.StartInfo = startInfo;
             process.Start();
@@ -82,12 +79,10 @@ namespace DLLirant.NET.Classes
 
             // We must kill child processes first!
             if (processCollection != null)
-            {
                 foreach (ManagementObject mo in processCollection)
                 {
                     KillProcessAndChildrens(Convert.ToInt32(mo["ProcessID"]));
                 }
-            }
 
             // Then kill parents.
             try

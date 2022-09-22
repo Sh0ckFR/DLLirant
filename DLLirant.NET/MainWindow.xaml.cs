@@ -92,34 +92,23 @@ namespace DLLirant.NET
         {
             logs.Clear();
             logs.Add($"Selected Binary: {SelectedBinary}");
-            if (peFile.IsSigned)
-            {
+            if (peFile.IsSigned) {
                 logs.Add("Is signed: Yes");
-            }
-            else
-            {
+            } else {
                 logs.Add("Is signed: No");
             }
 
-            if (peFile.HasValidSignature)
-            {
+            if (peFile.HasValidSignature) {
                 logs.Add("Is signature valid: Yes");
-            }
-            else
-            {
+            } else {
                 logs.Add("Is signature valid: No");
             }
 
-            if (peFile.Is64Bit)
-            {
+            if (peFile.Is64Bit) {
                 logs.Add("Architecture: x64");
-            }
-            else if (peFile.Is32Bit)
-            {
+            } else if (peFile.Is32Bit) {
                 logs.Add("Architecture: x86");
-            }
-            else
-            {
+            } else {
                 logs.Add("Architecture: Unknown");
             }
 
@@ -264,10 +253,8 @@ namespace DLLirant.NET
             foreach (PeNet.Header.Pe.ImportFunction func in peFile.ImportedFunctions)
             {
                 if (func.DLL == module)
-                {
                     if (func.Name != null)
                         importedFunctions.Add($"extern \"C\" __declspec(dllexport) void {func.Name}() {{ Main(); }}");
-                }
             }
             return importedFunctions;
         }
