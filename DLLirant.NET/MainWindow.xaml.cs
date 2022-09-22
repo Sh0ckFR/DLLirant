@@ -7,6 +7,7 @@ using System.Threading;
 using System.Collections.Generic;
 using DLLirant.NET.Classes;
 using System.Threading.Tasks;
+using PeNet;
 
 namespace DLLirant.NET
 {
@@ -87,13 +88,9 @@ namespace DLLirant.NET
             textBox.Text = string.Empty;
         }
 
-        private async void ButtonStart_Click(object sender, RoutedEventArgs e)
+        private void DisplayPEFileInformations(PeFile peFile)
         {
-            SynchronizationContext uiContext = SynchronizationContext.Current;
-            PeNet.PeFile peFile = new PeNet.PeFile(SelectedBinary);
-            FileOperations fileOp = new FileOperations();
-            CodeGenerator codeGenerator = new CodeGenerator();
-
+            logs.Clear();
             logs.Add($"Selected Binary: {SelectedBinary}");
             if (peFile.IsSigned)
             {
@@ -106,11 +103,11 @@ namespace DLLirant.NET
 
             if (peFile.HasValidSignature)
             {
-                logs.Add("Is signature is valid: Yes");
+                logs.Add("Is signature valid: Yes");
             }
             else
             {
-                logs.Add("Is signature is valid: No");
+                logs.Add("Is signature valid: No");
             }
 
             if (peFile.Is64Bit)
@@ -130,12 +127,22 @@ namespace DLLirant.NET
             logs.Add($"SHA1: {peFile.Sha1}");
             logs.Add($"SHA256: {peFile.Sha256}");
             logs.Add($"===========================================================");
+        }
+
+        private async void ButtonStart_Click(object sender, RoutedEventArgs e)
+        {
+            SynchronizationContext uiContext = SynchronizationContext.Current;
+            PeFile peFile = new PeFile(SelectedBinary);
+            FileOperations fileOp = new FileOperations();
+            CodeGenerator codeGenerator = new CodeGenerator();
+
+            DisplayPEFileInformations(peFile);
 
             if (SelectedBinary.EndsWith(".dll")) {
                 // Proxying the dll.
                 List<string> exportedFunctions = new List<string>();
-                string dll_name = TextBoxProxyDLLName.Text;
-                dll_name = dll_name.Replace(".dll", string.Empty);
+                string dllName = TextBoxProxyDLLName.Text;
+                dllName = dllName.Replace(".dll", string.Empty);
                 foreach (PeNet.Header.Pe.ExportFunction func in peFile.ExportedFunctions)
                 {
                     exportedFunctions.Add($"#pragma comment(linker,\"/export:{func.Name}={TextBoxProxyDLLName.Text}.{func.Name},@{func.Ordinal}\")");
@@ -145,7 +152,7 @@ namespace DLLirant.NET
                     codeGenerator.GenerateDLL("Main();", exportedFunctions);
                 });
                 // If the dll name startstwith C:, it's an existing dll used, so we just rename the compiled dll as the original dll.
-                if(dll_name.StartsWith("C:"))
+                if(dllName.StartsWith("C:"))
                 {
                     fileOp.RenameFile("output/DLLirantDLL.dll", $"output/{Path.GetFileName(SelectedBinary)}");
                     logs.Add($"[+] {Path.GetFileName(SelectedBinary)} proxying generated in output directory, replace the original DLL by this file, it should work");
@@ -153,8 +160,8 @@ namespace DLLirant.NET
                 {
                     // Else we copy the original DLL, rename it with the name selected and copy the original dll.
                     fileOp.CopyFile(SelectedBinary);
-                    fileOp.RenameFile($"output/{Path.GetFileName(SelectedBinary)}", $"output/{dll_name}.dll");
-                    logs.Add($"[+] {dll_name}.dll (original DLL) and {Path.GetFileName(SelectedBinary)} (generated DLL with the original DLL name) proxying generated in output directory, copy the both files, it should work");
+                    fileOp.RenameFile($"output/{Path.GetFileName(SelectedBinary)}", $"output/{dllName}.dll");
+                    logs.Add($"[+] {dllName}.dll (original DLL) and {Path.GetFileName(SelectedBinary)} (generated DLL with the original DLL name) proxying generated in output directory, copy the both files, it should work");
                 }
             } else {
                 List<string> testedModules = new List<string>();
@@ -173,6 +180,8 @@ namespace DLLirant.NET
                     if (!isExcluded && !testedModules.Contains(func.DLL))
                     {
                         RecreateOutputDirectories();
+                        DisplayPEFileInformations(peFile);
+                        fileOp.CopyFilesDirToDir(func.DLL, "import/", "output/");
 
                         logs.Add($"Testing {func.DLL}...");
 
@@ -206,6 +215,10 @@ namespace DLLirant.NET
                         foreach (string importedFunc in importedFunctions)
                         {
                             RecreateOutputDirectories();
+                            DisplayPEFileInformations(peFile);
+                            fileOp.CopyFilesDirToDir(func.DLL, "import/", "output/");
+
+                            logs.Add($"Testing {func.DLL}...");
 
                             functionsToTest.Add(importedFunc);
                             foreach (string function in functionsToTest)
@@ -241,17 +254,19 @@ namespace DLLirant.NET
                         testedModules.Add(func.DLL);
                     }
                 }
+                logs.Add("Done.");
             }
         }
 
-        private List<string> GetImportedFunctions(PeNet.PeFile peFile, string module)
+        private List<string> GetImportedFunctions(PeFile peFile, string module)
         {
             List<string> importedFunctions = new List<string>();
             foreach (PeNet.Header.Pe.ImportFunction func in peFile.ImportedFunctions)
             {
                 if (func.DLL == module)
                 {
-                    importedFunctions.Add($"extern \"C\" __declspec(dllexport) void {func.Name}() {{ Main(); }}");
+                    if (func.Name != null)
+                        importedFunctions.Add($"extern \"C\" __declspec(dllexport) void {func.Name}() {{ Main(); }}");
                 }
             }
             return importedFunctions;
