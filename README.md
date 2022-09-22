@@ -1,4 +1,7 @@
 # DLLirant
+
+**[IMPORTANT]** I am currently working on the new .NET version, so I recommend you to compile the project by yourself if you want to have a more stable version
+
 DLLirant is a tool to automatize the DLL Hijacking and DLL Proxying researches on a specified binary.
 
 ![alt text](https://raw.githubusercontent.com/Sh0ckFR/DLLirant/main/screenshot.png)
